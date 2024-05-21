@@ -255,16 +255,14 @@ WHERE
 -- 全ての国と言語を表示してください。一つの国に複数言語があると思いますので同じ国名を言語数だけ出力してください。
 SELECT
     countries.name,
-    GROUP_CONCAT(countrylanguages.language SEPARATOR ', ') AS language
+    GROUP_CONCAT(countrylanguages.language SEPARATOR ', ') AS languages
 FROM
     countries
-    CROSS JOIN
+    INNER JOIN
         countrylanguages
-WHERE
-    countries.code = countrylanguages.country_code
+    ON  countries.id = countrylanguages.country_id
 GROUP BY
-    countries.name,
-    countrylanguages.language
+    countries.name
 ;
 
 -- 問26
@@ -315,7 +313,8 @@ AND countrylanguages.is_official = 1
 ;
 
 -- 問29
--- SELECT
+-- 全ての有名人の名前と国名をテーブル結合せずに出力してください。
+SELECT
     celebrities.name AS name,
     (
         SELECT
@@ -333,22 +332,16 @@ FROM
 -- 最年長が50歳以上かつ最年少が30歳以下の国を表示させてください。
 SELECT
     country_code,
-    max_age AS MAX,
-    min_age AS MIN
+    MAX(age) AS max_age,
+    MIN(age) AS min_age
 FROM
-    (
-        SELECT
-            country_code,
-            MAX(age) AS max_age,
-            MIN(age) AS min_age
-        FROM
-            celebrities
-        GROUP BY
-            country_code
-    ) AS celeb_ages
+    celebrities
 WHERE
-    max_age >= 50
-AND min_age <= 30
+    country_code != ''
+GROUP BY
+    country_code
+HAVING MAX(age) >= 50
+AND MIN(age) <= 30
 ;
 
 -- 問31
@@ -372,8 +365,6 @@ WHERE
 
 -- 問32
 -- 有名人の出身国の平均年齢を高い方から順に表示してください。ただし、FROM句はcountriesテーブルとしてください。
-
-行 0 - 12 の表示(合計 13, クエリの実行時間： 0.0006 秒。)
 SELECT
     c.name AS "国名",
     AVG(ce.age) AS "平均年齢"
